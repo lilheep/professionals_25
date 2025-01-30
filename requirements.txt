@@ -1,0 +1,5 @@
+peewee
+pymysql
+fastapi
+uvicorn
+cryptography
