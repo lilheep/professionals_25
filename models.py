@@ -4,7 +4,8 @@ from database import db_connection
 class BaseModel(Model):
     class Meta:
         database = db_connection
-        
+
+           
 class Employees(BaseModel):
     employee = AutoField()
     last_name = CharField(max_length=255, null=False)
@@ -19,3 +20,9 @@ class Employees(BaseModel):
     director_id = IntegerField()
     assistant_id = IntegerField()
     other_information = CharField(max_length=255, null=True)
+    
+class Departament(BaseModel):
+    departament_id = AutoField()
+    departament_name = CharField(max_length=255, null=False)
+    description = CharField(max_length=255, null=True)
+    director_departament = ForeignKeyField(Employees, on_delete='SET NULL', null=True)
