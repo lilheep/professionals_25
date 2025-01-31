@@ -27,12 +27,12 @@ class Employees(BaseModel):
         constraints=[Check(f"birthday >= '{birthday_check}'")]
         )
     business_phone_number = CharField(max_length=20, null=False, 
-                                    constraints=[Check("business_phone_number ~ '^[0-9+()\\-#] + $'")])
+                                    constraints=[Check("business_phone_number REGEXP '^[0-9+()\\-#] + $'")])
     personal_phone_number = CharField(max_length=20, null=False, 
-                                    constraints=[Check("personal_phone_number ~ '^[0-9+()\\-#] + $'")])
+                                    constraints=[Check("personal_phone_number REGEXP '^[0-9+()\\-#] + $'")])
     cabinet = CharField(null=False, max_length=10)
     corporate_mail = CharField(max_length=255, null=False, unique = True, 
-                            constraints=[Check("corporate_mail ~ '^[A-Za-z0-9._%+-]+@[A-Za-z]+\\.[A-Za-z]{2,}$'")])
+                            constraints=[Check("corporate_mail REGEXP '^[A-Za-z0-9._%%+-]+@[A-Za-z]+\\.[A-Za-z]{2,}$'")])
     department_id = ForeignKeyField(Departments, on_delete='SET NULL', backref='employees', null=True)
     position_id = ForeignKeyField(Positions, on_delete='SET NULL', backref='employees', null=True)
     director_id = ForeignKeyField('self', backref='subordinates', on_delete='SET NULL', null=True)
@@ -58,8 +58,18 @@ class EmployeeAdditionalInfo(BaseModel):
     additional_id = AutoField()
     employee_id = ForeignKeyField(Employees, backref='', on_delete='CASCADE')
     personal_phone_number = CharField(max_length=20, null=True, 
-                                    constraints=[Check("personal_phone_number ~ '^[0-9+()\\-#] + $'")])
-    birthday = DateField(null=True)
+                                    constraints=[Check("personal_phone_number REGEXP '^[0-9+()\\-#] + $'")])
+    birthday_check = datetime.today().date() - timedelta(18*365.25)
+    birthday = DateField(
+        constraints=[Check(f"birthday >= '{birthday_check}'")]
+        )
+    
+    def validate(self):
+        today = datetime.today().date()
+        age_18 = today - timedelta(18*365.25)
+        
+        if self.birthday < age_18:
+            raise ValueError('The employee must be of legal age!')
     
 tables = [
     Departments,
