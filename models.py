@@ -70,6 +70,26 @@ class EmployeeAdditionalInfo(BaseModel):
         
         if self.birthday < age_18:
             raise ValueError('The employee must be of legal age!')
+        
+class TrainingCategories(BaseModel):
+    category_id = AutoField()
+    category_name = CharField(max_length=255, null=False)
+    description = CharField(max_length=255, null=False)
+    
+class TrainingOrganizators(BaseModel):
+    organizator_id = AutoField()
+    internal_organizator = ForeignKeyField(Employees, backref='organtizator', on_delete='SET NULL', null=True)
+    external_organizator = CharField(max_length=255, null=True)
+
+class TrainingsCalendar(BaseModel):
+    training_id = AutoField()
+    training_name = CharField(max_length=255, null=False)
+    category_id = ForeignKeyField(TrainingCategories, on_delete='SET NULL', null=True, backref='training')
+    start_date = DateField(null=False)
+    end_date = DateField(null=False)
+    location = CharField(max_length=255, null=False)
+    organizator = ForeignKeyField(TrainingOrganizators, backref='organization', on_delete='CASCADE')
+    
     
 tables = [
     Departments,
@@ -80,9 +100,11 @@ tables = [
 ]
 
 def create_tables():
-    db_connection.create_tables(tables)
-    print('Tables created successfully!')
-    
+    try:
+        db_connection.create_tables(tables)
+        print('Tables created successfully!')
+    except Exception as e:
+        print(f'Tables not created: {e}!')
     
 create_tables()
 
