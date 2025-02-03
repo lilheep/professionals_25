@@ -1,4 +1,5 @@
-from peewee import Model, CharField, AutoField, ForeignKeyField, IntegerField, DateField, Check
+from peewee import Model, CharField, AutoField, ForeignKeyField, IntegerField, DateField, Check, \
+    TextField, DateTimeField
 from database import db_connection
 from datetime import datetime, timedelta
 
@@ -90,13 +91,131 @@ class TrainingsCalendar(BaseModel):
     location = CharField(max_length=255, null=False)
     organizator = ForeignKeyField(TrainingOrganizators, backref='organization', on_delete='CASCADE')
     
+class TrainingMaterials(BaseModel):
+    material_id = AutoField()
+    training_id = ForeignKeyField(TrainingsCalendar, backref='materials', on_delete='CASCADE')
+    material_name = CharField(max_length=255, null=False)
+    file_path = CharField(max_length=255, null=False)
+    description = CharField(max_length=255, null=True)
+    
+class TrainingParticipants(BaseModel):
+    participant_id = AutoField()
+    employee_id = ForeignKeyField(Employees, backref='participant', on_delete='CASCADE')
+    training_id = ForeignKeyField(TrainingsCalendar, backref='participant', on_delete='CASCADE')
+    status = CharField(max_length=255, null=False, 
+                       constraints=[Check("status IN ('Registered', 'Completed', 'Canceled')")])
+    registation_date = DateField(null=False)
+    
+class MaterialCards(BaseModel):
+    card_id = AutoField()
+    material_id = ForeignKeyField(TrainingMaterials, backref='card', on_delete='CASCADE')
+    form = CharField(max_length=255, null=False)
+    uploade_date = DateField(null=False)
+    author = ForeignKeyField(TrainingOrganizators, backref='uploaded_materials', on_delete='SET NULL', null=True)
+    description = CharField(max_length=255, null=True)
+    
+class TrainingFeedback(BaseModel):
+    feedback_id = AutoField()
+    training_id = training_id = ForeignKeyField(TrainingsCalendar, backref='feedback', on_delete='CASCADE')
+    employee_id = ForeignKeyField(Employees, backref='reviews', on_delete='CASCADE')
+    rating = IntegerField(constraints=[Check("rating >= 1 AND rating <=5 ")], null=False)
+    review_text = TextField(null=True)
+    riview_date = DateField(null=False)
+    
+class AbsenceTypes(BaseModel):
+    type_id = AutoField()
+    type_name = CharField(max_length=255, null=False)
+    description = CharField(max_length=255, null=False)
+
+class AbsenceCalendar(BaseModel):
+    absence_id = AutoField()
+    employee_id = ForeignKeyField(Employees, backref='absence', on_delete='CASCADE')
+    type_id = ForeignKeyField(AbsenceTypes, backref='type_absence', on_delete='SET NULL', null=True)
+    start_date = DateTimeField(null=False)
+    end_date = DateTimeField(null=False)
+    reason = CharField(max_length=255, null=True)
+    
+class Substitutions(BaseModel):
+    substitution_id = AutoField()
+    absent_employee_id = ForeignKeyField(Employees, backref='absent_substitution', on_delete='CASCADE')
+    substituting_employee_id = ForeignKeyField(Employees, backref='sub_substitution', on_delete='CASCADE')
+    start_date = DateTimeField(null=False)
+    end_date = DateTimeField(null=False)
+
+class ActivityDirections(BaseModel):
+    direction_id = AutoField()
+    direction_name = CharField(max_length=255, null=False)
+    description = CharField(max_length=255, null=True)
+    
+class CandidateStatus(BaseModel):
+    status_id = AutoField()
+    status_name = CharField(max_length=255, null=False, 
+                            constraints=[Check("status_name IN ('Checked', 'Invited', 'Canceled')")])
+    description = CharField(max_length=255, null=True)
+    
+class Candidates(BaseModel):
+    candidate_id = AutoField()
+    last_name = CharField(max_length=255, null=False)
+    first_name = CharField(max_length=255, null=False)
+    middle_name = CharField(max_length=255, null=True)
+    email = CharField(max_length=255, null=False, 
+                      constraints=[Check("email REGEXP '^[A-Za-z0-9._%%+-]+@[A-Za-z]\\.[A-Za-z]{2,}$'")])
+    phone_number = CharField(max_length=20, null=False, 
+                            constraints=[Check("phone_number REGEXP '^[0-9+()\\-#] + $'")])
+    birthday_check = datetime.today().date() - timedelta(18*365.25)
+    birthday = DateField(
+        constraints=[Check(f"birthday >= '{birthday_check}'")])
+    direction_id = ForeignKeyField(ActivityDirections, backref='candidates_direction', on_delete='SET NULL', null=True)
+    status_id = ForeignKeyField(CandidateStatus, backref='candidates_status', on_delete='SET NULL', null=True)
+
+class ResumeCandidates(BaseModel):
+    resume_id = AutoField()
+    candidate_id = ForeignKeyField(Candidates, backref='resume_candidate', on_delete='CASCADE')
+    file_path = CharField(max_length=255, null=False)
+    uploaded_resume = DateField(null=False)
+    notes = CharField(max_length=255, null=True)
+
+class EventsCalendar(BaseModel):
+    event_id = AutoField()
+    event_name = CharField(max_length=255, null=False)
+    event_type = CharField(max_length=255, null=False)
+    event_status = CharField(max_length=255, null=False, 
+                            constraints=[Check("event_status IN ('Planned', 'Completed', 'Cancelled')")])
+    start_time = DateTimeField(null=False)
+    end_time = DateTimeField(null=False)
+    description_event = TextField(null=False)
+    responsible_employee = ForeignKeyField(Employees, backref='events', on_delete='SET NULL', null=True)
+    departament_id = ForeignKeyField(Departments, backref='events', on_delete='SET NULL', null=True)
+    
+
+    
+    
+    def validate(self):
+        today = datetime.today().date()
+        age_18 = today - timedelta(18*365.25)
+        
+        if self.birthday < age_18:
+            raise ValueError('The employee must be of legal age!')
+    
+    
+    
     
 tables = [
     Departments,
     Positions,
     Employees,
     EmployeesSchedules,
-    EmployeeAdditionalInfo
+    EmployeeAdditionalInfo,
+    TrainingCategories,
+    TrainingOrganizators,
+    TrainingsCalendar,
+    TrainingMaterials,
+    TrainingParticipants,
+    MaterialCards,
+    TrainingFeedback,
+    AbsenceTypes,
+    AbsenceCalendar,
+    Substitutions
 ]
 
 def create_tables():
