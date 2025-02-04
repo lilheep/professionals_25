@@ -109,8 +109,14 @@ class TrainingParticipants(BaseModel):
 class MaterialCards(BaseModel):
     card_id = AutoField()
     material_id = ForeignKeyField(TrainingMaterials, backref='card', on_delete='CASCADE')
-    form = CharField(max_length=255, null=False)
+    material_name = CharField(max_length=255, null=False)
+    approval_date = DateField(null=False)
     uploade_date = DateField(null=False)
+    status = CharField(max_length=255, null=False, 
+                       constraints = [Check("status IN ('Approved', 'Checked', 'Canceled')")])
+    type = CharField(max_length=255, null=False)
+    area = CharField(max_length=255, null=False)
+    form = CharField(max_length=255, null=False)
     author = ForeignKeyField(TrainingOrganizators, backref='uploaded_materials', on_delete='SET NULL', null=True)
     description = CharField(max_length=255, null=True)
     
@@ -187,19 +193,13 @@ class EventsCalendar(BaseModel):
     responsible_employee = ForeignKeyField(Employees, backref='events', on_delete='SET NULL', null=True)
     departament_id = ForeignKeyField(Departments, backref='events', on_delete='SET NULL', null=True)
     
-
-    
-    
     def validate(self):
         today = datetime.today().date()
         age_18 = today - timedelta(18*365.25)
         
         if self.birthday < age_18:
             raise ValueError('The employee must be of legal age!')
-    
-    
-    
-    
+       
 tables = [
     Departments,
     Positions,
@@ -215,7 +215,12 @@ tables = [
     TrainingFeedback,
     AbsenceTypes,
     AbsenceCalendar,
-    Substitutions
+    Substitutions,
+    ActivityDirections,
+    CandidateStatus,
+    Candidates,
+    ResumeCandidates,
+    EventsCalendar
 ]
 
 def create_tables():
