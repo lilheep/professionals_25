@@ -1,10 +1,6 @@
 from models import MaterialCards, TrainingMaterials, TrainingOrganizators
 from datetime import date
 
-
-# peredelat' func edit, get x2
-
-
 def add_materials():
     training_material_id = input('Enter ID training material: ')
     try:
@@ -48,52 +44,79 @@ def add_materials():
         print(f'Error when adding material: {e}')
         
 def edit_material():
-    material_id = int(input('Enter the ID of the material you want to edit: '))
-    material = TrainingMaterials.get_or_none(TrainingMaterials.material_id == material_id)
-    
-    if not material:
-        print('Error! Material not found!')
+    try:
+        card_id = int(input('Enter the ID of the material you want to edit: '))
+        material = MaterialCards.get(MaterialCards.card_id == card_id)
+    except Exception as e:
+        print(f'Error, invalid ID! Detail: {e}')
         return
+        
+    def get_new_value(field_name, old_value):
+        new_value = input(f'{field_name} ({old_value})').strip()
+        if new_value:
+            return new_value
+        else:
+            return old_value
+        
+    new_training_material_id = int(input(f'Enter new ID training material ({material.training_material_id.training_id}): '))
+    if new_training_material_id:
+        try:
+            new_training_material = TrainingMaterials.get(TrainingMaterials.training_id == new_training_material_id)
+            material.training_material_id = new_training_material
+        except Exception as e:
+            print(f'Error, invalid training material ID! Detail: {e}')
+            return
+        
+    material.material_name = get_new_value('Material name: ', material.material_name)
+    material.approval_date = get_new_value('Approval date (YYYY-MM-DD): ', material.approval_date)
+    material.upload_date = date.today()
+    material.status = get_new_value('Status(Approved, Checked, Canceled): ', material.status)
+    material.material_type = get_new_value('Material type: ', material.material_type)
+    material.area = get_new_value('Area: ', material.area)
+    new_author_id = int(input(f'Enter new author ID ({material.author.organizator_id if material.author else "None"}): '))
     
-    training_id = int(input(f'Enter the new training ID ({material.training_id}): '))
-    material_name = input(f'Enter a new name for the material ({material.material_name}): ')
-    file_path = input(f'Enter the new file path ({material.file_path}): ')
-    description = input(f'Enter a new description ({material.description}): ')
+    if new_author_id:
+        try:
+            new_author = TrainingOrganizators.get(TrainingOrganizators.organizator_id == new_author_id)
+            material.author = new_author
+        except Exception as e:
+            print(f'Error, invalid author ID! Detail: {e}')
+            return
+        
+    material.description = get_new_value('Description: ', material.description)
     
     try:
-        material.training_id = training_id
-        material.material_name = material_name
-        material.file_path = file_path
-        material.description = description
         material.save()
-        
-        print(f'Material {material.material_name} successfully updated!')
-    
+        print(f'Succeffully updated material {material.material_name}')
     except Exception as e:
-        print(f'Error! Material data not updated: {e}!')
-
-def get_all_materials():
-    materials = TrainingMaterials.select()
-    
-    if materials:
-        for material in materials:
-            print(f'ID: {material.material_id} | training_id: {material.training_id} | file_path: {material.file_path} | description: {material.description}')
-    else:
-        print('There are no materials available for viewing!')
-        
+        print(f'Error updated material! Detail: {e}')
+             
 def get_material():
-    material_id = int(input('Enter material ID: '))
-    material = TrainingMaterials.get_or_none(TrainingMaterials.material_id == material_id)
-    
-    if material:
-        print('Material Details:')
-        
+    card_id = int(input('Enter the ID of the material you want to get: '))
+    try:    
+        material = MaterialCards.get(MaterialCards.card_id == card_id)
+        print(f'Material ID: {material.card_id}')
+        print(f'ID training material: {material.training_material_id}')
         print(f'Material name: {material.material_name}')
-        print(f'Training ID: {material.training_id}')
-        print(f'File path: {material.file_path}')
+        print(f'Approval date: {material.approval_date}')
+        print(f'Upload date: {material.upload_date}')
+        print(f'Status: {material.status}')
+        print(f'Type material: {material.material_type}')
+        print(f'Area: {material.area}')
+        print(f'Author ID: {material.author}')
         print(f'Description: {material.description}')
+    except Exception as e:
+        print(f'Error, material not found! Detail: {e}')
         
-
-        
+def get_all_materials():
+    materials = MaterialCards.select()
     
+    if materials.count() == 0:
+        print('Materials not found!')
+        return
     
+    try:    
+        for material in materials:
+            print(f'Material ID: {material.card_id} | ID training material: {material.training_material_id} | Material name: {material.material_name} | Approval date: {material.approval_date} | Upload date: {material.upload_date} | Status: {material.status} | Type material: {material.material_type} | Area: {material.area} | Author ID: {material.author.organizator_id if material.author else "None"} | Description: {material.description}')
+    except Exception as e:
+        print(f'Error! Detail: {e}')     
