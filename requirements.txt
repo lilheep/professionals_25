@@ -3,3 +3,6 @@ pymysql
 fastapi
 uvicorn
 cryptography
+pandas
+openpyxl
+pyjwt
