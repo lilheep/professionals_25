@@ -5,3 +5,4 @@ uvicorn
 cryptography
 pandas
 openpyxl
+pyjwt
