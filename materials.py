@@ -120,3 +120,4 @@ def get_all_materials():
             print(f'Material ID: {material.card_id} | ID training material: {material.training_material_id} | Material name: {material.material_name} | Approval date: {material.approval_date} | Upload date: {material.upload_date} | Status: {material.status} | Type material: {material.material_type} | Area: {material.area} | Author ID: {material.author.organizator_id if material.author else "None"} | Description: {material.description}')
     except Exception as e:
         print(f'Error! Detail: {e}')     
+        
