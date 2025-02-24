@@ -213,6 +213,29 @@ class WorkingCalendar(BaseModel):
         
         if self.birthday < age_18:
             raise ValueError('The employee must be of legal age!')
+        
+class User(BaseModel):
+    user_id = AutoField()
+    employee_id = ForeignKeyField(Employees, on_delete='CASCADE', backref='user_employee', null=True)
+    name = CharField(max_length=255, null=False)
+    password = CharField(max_length=255, null=False)
+    
+class Document(BaseModel):
+    document_id = AutoField()
+    title = CharField(max_length=255, null=False)
+    date_created = DateTimeField(null=False)
+    date_update = DateTimeField(null=False)
+    category = CharField(max_length=255, null=False)
+    has_comments = BooleanField(null=False)
+    
+class Comment(BaseModel):
+    comment_id = AutoField()
+    document_id = ForeignKeyField(Document, backref='comment_document', on_delete='CASCADE', null=True)
+    text = TextField(null=False)
+    date_created = DateTimeField(null=False)
+    date_updated = DateTimeField(null=False)
+    author_id = ForeignKeyField(User, backref='author_comment', on_delete='SET NULL', null=True)
+    author_position = ForeignKeyField(Positions, backref='postition_author', on_delete='SET NULL', null=True)
        
 tables = [
     Departments,
@@ -235,7 +258,10 @@ tables = [
     Candidates,
     ResumeCandidates,
     EventsCalendar,
-    WorkingCalendar
+    WorkingCalendar,
+    User,
+    Document,
+    Comment
 ]
 
 def create_tables():
@@ -281,52 +307,52 @@ def create_records():
 create_tables()
 create_records()
 
-def add_employee(last_name, first_name, middle_name, birthday, business_phone_number, 
-                 personal_phone_number, cabinet, corporate_mail, department_id, 
-                 position_id, director_id=None, assistant_id=None, other_information=None):
-    employee = Employees.get_or_none(corporate_mail=corporate_mail)
+# def add_employee(last_name, first_name, middle_name, birthday, business_phone_number, 
+#                  personal_phone_number, cabinet, corporate_mail, department_id, 
+#                  position_id, director_id=None, assistant_id=None, other_information=None):
+#     employee = Employees.get_or_none(corporate_mail=corporate_mail)
     
-    if not employee:
-        employee = Employees.create(
-            last_name=last_name,
-            first_name=first_name,
-            middle_name=middle_name,
-            birthday=birthday,
-            business_phone_number=business_phone_number,
-            personal_phone_number=personal_phone_number,
-            cabinet=cabinet,
-            corporate_mail=corporate_mail,
-            department_id=department_id,
-            position_id=position_id,
-            director_id=director_id,
-            assistant_id=assistant_id,
-            other_information=other_information
-        )
-        employee.save()
-    return employee
+#     if not employee:
+#         employee = Employees.create(
+#             last_name=last_name,
+#             first_name=first_name,
+#             middle_name=middle_name,
+#             birthday=birthday,
+#             business_phone_number=business_phone_number,
+#             personal_phone_number=personal_phone_number,
+#             cabinet=cabinet,
+#             corporate_mail=corporate_mail,
+#             department_id=department_id,
+#             position_id=position_id,
+#             director_id=director_id,
+#             assistant_id=assistant_id,
+#             other_information=other_information
+#         )
+#         employee.save()
+#     return employee
 
-department = Departments.get_or_none(parent_department='Административный отдел', department_name='Административный департамент')
-if not department:
-    department = Departments.create(parent_department='Административный отдел', department_name='Административный департамент')
+# department = Departments.get_or_none(parent_department='Административный отдел', department_name='Административный департамент')
+# if not department:
+#     department = Departments.create(parent_department='Административный отдел', department_name='Административный департамент')
     
-position = Positions.get_or_none(position_name='Руководитель контрольно-ревизионного направления')
-if not position:
-    position = Positions.create(position_name='Руководитель контрольно-ревизионного направления')
+# position = Positions.get_or_none(position_name='Руководитель контрольно-ревизионного направления')
+# if not position:
+#     position = Positions.create(position_name='Руководитель контрольно-ревизионного направления')
 
-new_employee = add_employee(
-    last_name='Ivanov',
-    first_name='Ivan',
-    middle_name='Ivanovich',
-    birthday='1990-05-10',
-    business_phone_number='+7 (179) 370-26-88',
-    personal_phone_number='+7 (272) 192-26-66',
-    cabinet='A123',
-    corporate_mail='ivanov@example.com',
-    department_id=department,
-    position_id=position
-)
+# new_employee = add_employee(
+#     last_name='Ivanov',
+#     first_name='Ivan',
+#     middle_name='Ivanovich',
+#     birthday='1990-05-10',
+#     business_phone_number='+7 (179) 370-26-88',
+#     personal_phone_number='+7 (272) 192-26-66',
+#     cabinet='A123',
+#     corporate_mail='ivanov@example.com',
+#     department_id=department,
+#     position_id=position
+# )
 
-print(f"Employee {new_employee.first_name} {new_employee.last_name} added successfully.")
+# print(f"Employee {new_employee.first_name} {new_employee.last_name} added successfully.")
 
 if not db_connection.is_closed():
     db_connection.close()
