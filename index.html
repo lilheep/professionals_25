@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новости компании</title>
+    <style>
+        .employee-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: left;
+        }
+        .employee-card {
+            width: calc(15% - 20px);
+            background-color: green;
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+            color: white;
+        }
+        .news-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            max-width: 900px;
+            padding: 20px;
+            margin: auto;
+        }
+
+        .news-card {
+            background-color: green;
+            text-align: left;
+            color: white;
+        }
+        .news-card img {
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <img src="data/Logo.png" height="60px">
+        <h3 style="margin: 30px;">Сотрудники</h3>
+    </div>
+
+    <div id="employee-container" class="employee-container"></div>
+
+    <div>
+        <h2 style="margin: 40px">Новости</h2>
+    </div>
+
+    <div id="news-container" class="news-container"></div>
+
+    <script>
+        async function fetchEmployees() {
+            try {
+                let response = await fetch('http://127.0.0.1:8000/api/get/cardEmployee');
+                let employees = await response.json();
+                renderEmployees(employees);
+            } catch (error) {
+                console.log(`Ошибка загрузки данных о сотрудниках: ${error}`);
+            }
+        }
+
+        function renderEmployees(employees) {
+            const container = document.getElementById('employee-container');
+            container.innerHTML = '';
+
+            employees.forEach(employee => {
+                const employeeCard = document.createElement("div");
+                employeeCard.className = 'employee-card';
+                employeeCard.innerHTML = `
+                    <h4>${employee.last_name} ${employee.first_name} ${employee.middle_name || ''}</h4>
+                    <p>Должность: ${employee.position_name}</p>
+                    <p>Email: ${employee.corporate_mail}</p>
+                    <p>Телефон: ${employee.number_phone}</p>
+                    <p>Дата рождения: ${employee.birthday}</p>
+                `;
+                container.appendChild(employeeCard);
+            });
+        }
+
+        async function fetchNews() {
+            try {
+                let response = await fetch("http://127.0.0.1:8000/api/get/News");
+                let news = await response.json();
+                renderNews(news);
+            } catch (error) {
+                console.log(`Не удалось получить новости: ${error}`);
+            }
+        }
+
+        function renderNews(news) {
+            const container = document.getElementById("news-container");
+            container.innerHTML = "";
+
+            news.forEach(headline => {
+                const newsCard = document.createElement("div");
+                newsCard.className = "news-card";
+                newsCard.innerHTML = `
+                    <img src="${headline.image_url || 'data/photo.png'}" alt="Новость">
+                    <h3>${headline.news_title}</h3>
+                    <p>${headline.news_text}</p>
+                    <p><strong>Дата:</strong> ${headline.news_date}</p>
+                `;
+                container.appendChild(newsCard);
+            });
+        }
+
+        fetchEmployees();
+        fetchNews();
+        setInterval(fetchNews, 15000);
+    </script>
+</body>
+</html>

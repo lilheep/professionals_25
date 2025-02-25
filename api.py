@@ -1,8 +1,18 @@
 from fastapi import FastAPI, HTTPException, Body
-from models import User, Document, Comment, Employees, Positions
+from models import User, Document, Comment, Employees, Positions, News
 import datetime
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_user(name: str):
     user = User.get(User.name == name)
@@ -66,8 +76,22 @@ async def send_comment(doc_id: int, text_com: str, author: int, position: int):
     comment = Comment.get_or_create(document_id=doc_id, text=text_com, date_created=datetime.datetime.today(), date_updated=datetime.datetime.today(), author_id=author, author_position=position)
     return comment
 
+@app.get('/api/get/News')
+async def get_all_news():
+    return list(News.select().dicts())
 
-
-    
+@app.get('/api/get/cardEmployee')
+async def get_card_employee():
+    employees = Employees.select(Employees, Positions.position_name).join(Positions, on=(Employees.position_id == Positions.position_id))
+    employee_list = [{
+        'last_name': employee.last_name,
+        'first_name': employee.first_name,
+        'middle_name': employee.middle_name,
+        'birthday': employee.birthday,
+        'position_name': employee.position_id.position_name,
+        'number_phone': employee.business_phone_number,
+        'corporate_mail': employee.corporate_mail
+    } for employee in employees]
+    return employee_list
 
 

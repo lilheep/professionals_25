@@ -236,6 +236,12 @@ class Comment(BaseModel):
     date_updated = DateTimeField(null=False)
     author_id = ForeignKeyField(User, backref='author_comment', on_delete='SET NULL', null=True)
     author_position = ForeignKeyField(Positions, backref='postition_author', on_delete='SET NULL', null=True)
+    
+class News(BaseModel):
+    news_id = AutoField()
+    news_title = CharField(max_length=255, null=False)
+    news_text = TextField(null=False)
+    news_date = DateField(null=False)
        
 tables = [
     Departments,
@@ -261,7 +267,8 @@ tables = [
     WorkingCalendar,
     User,
     Document,
-    Comment
+    Comment,
+    News
 ]
 
 def create_tables():
