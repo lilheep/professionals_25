@@ -1,0 +1,32 @@
+<testsuite name="TestProjectManager">
+    <testcase name="test_project_details_director_exists">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_project_details_dates">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_project_timeline_project">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_project_vizual_stages">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_project_export_card">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_empty_project_name">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_empty_project_in_timeline">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_empty_project_employee_card">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_project_timeline_stage_names">
+        <result>passed</result>
+    </testcase>
+    <testcase name="test_project_timeline_stage_colors">
+        <result>passed</result>
+    </testcase>
+</testsuite>
